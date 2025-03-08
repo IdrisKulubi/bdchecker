@@ -13,7 +13,7 @@
 - **Next.js 15** for the frontend & backend routes.  
 - **Shadcn UI** for a polished, consistent user interface.  
 - **Neon DB** + **Drizzle ORM** for data persistence.  
-- **AI Integration** (e.g., OpenAI API) to automatically score opportunities.
+- **AI Integration** (e.g., DEEPSEEK R1) to automatically score opportunities.
 
 ---
 
@@ -80,7 +80,7 @@
 ## 6. Use Cases
 
 1. **Worker Submits an Opportunity**  
-   - **Description**: Worker fills out a form with details like project name, requirements, timeline, etc.  
+   - **Description**: Worker fills out a form with details like their name   project name, requirements, timeline, etc.   
    - **System Response**:  
      1. Stores data in Neon DB.  
      2. Sends text to AI for scoring.  
@@ -104,7 +104,7 @@
 ## 7. Functional Requirements
 
 1. **Opportunity Intake**  
-   - **FR-1**: System must allow users to submit new opportunities with required fields (title, description, timeline).  
+   - **FR-1**: System must allow users to submit new opportunities with required fields ( the users name of who submited the opportunity,title, description, timeline).  
    - **FR-2**: Must validate mandatory fields (e.g., “title” cannot be empty).
 
 2. **AI Scoring**  
@@ -120,11 +120,11 @@
    - **FR-8**: Offer basic analytics (e.g., number of “Go” vs. “No Go” per month).
 
 5. **User Management**  
-   - **FR-9**: Users must register/login.  
+   - **FR-9**: All the other users will not have to login ,, they will just add their names when submitting the opportunity ,, there will be a button there named manager  and on click the users has to enter a passcode that only the manager will have.  so on that correct passcode  the user will aaccess the managers side to do the manager staff. mke it just good UI/UX  for the users 
    - **FR-10**: Support role-based access (Worker, Manager, Admin).
 
 6. **Notifications**  
-   - **FR-11**: Notify managers (email or Slack) when new opportunities are ready for review.
+   - **FR-11**: a generall board for everyone to see all the GO OR NO GO  opportunities  that the manager has approved . 
 
 ---
 

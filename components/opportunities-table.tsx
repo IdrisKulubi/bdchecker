@@ -28,7 +28,6 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
@@ -149,7 +148,7 @@ export const columns: ColumnDef<Opportunity>[] = [
             href={`/opportunities/${row.original.id}`}
             className="text-primary hover:underline"
           >
-            {title}
+            {title.length > 50 ? `${title.substring(0, 50)}...` : title}
           </Link>
         </div>
       );

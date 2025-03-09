@@ -74,7 +74,7 @@ export default function ManagerAuthButton() {
         <Button
           variant="outline"
           size="sm"
-          className="gap-2 cursor-pointer"
+          className="gap-2 cursor-pointer bg-blue-500"
           onClick={() => router.push("/manager")}
         >
           <ShieldCheck className="h-4 w-4" />
@@ -96,7 +96,7 @@ export default function ManagerAuthButton() {
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" size="sm">
+        <Button variant="outline" className="bg-blue-500 cursor-pointer" size="sm">
           Manager Access
         </Button>
       </DialogTrigger>

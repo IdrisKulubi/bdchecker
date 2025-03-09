@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   BarChart,
   Bar,
@@ -24,6 +24,9 @@ import {
   TabsTrigger,
 } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
+import { getOpportunityBreakdown, TrendDataPoint, TimeFilter } from "@/lib/actions/dashboard";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface DashboardStats {
   totalOpportunities: number;
@@ -40,44 +43,36 @@ interface UserStats {
   adminCount: number;
 }
 
-interface HistoricalData {
-  month: string;
-  go: number;
-  noGo: number;
-  pending: number;
-  total: number;
-}
-
-// Generate some historical data for demo purposes
-const generateHistoricalData = (): HistoricalData[] => {
-  const months = [
-    "Jan", "Feb", "Mar", "Apr", "May", "Jun", 
-    "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
-  ];
-  
-  return months.map((month) => {
-    const total = Math.floor(Math.random() * 30) + 10;
-    const go = Math.floor(Math.random() * (total * 0.7));
-    const noGo = Math.floor(Math.random() * (total * 0.4));
-    const pending = total - go - noGo;
-    
-    return {
-      month,
-      go,
-      noGo,
-      pending,
-      total,
-    };
-  });
-};
-
 interface OpportunityChartsProps {
   stats: DashboardStats;
   userStats: UserStats;
 }
 
 export function OpportunityCharts({ stats, userStats }: OpportunityChartsProps) {
-  const historicalData = React.useMemo(() => generateHistoricalData(), []);
+  const [trendData, setTrendData] = useState<TrendDataPoint[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState("overview");
+  const [timeFilter, setTimeFilter] = useState<TimeFilter>("month");
+  
+  // Fetch trend data when the component mounts or when the trends tab is selected
+  useEffect(() => {
+    if (activeTab === "trends") {
+      const fetchTrendData = async () => {
+        setIsLoading(true);
+        try {
+          // Use the breakdown function with the selected time filter
+          const data = await getOpportunityBreakdown(timeFilter);
+          setTrendData(data);
+        } catch (error) {
+          console.error("Failed to fetch trend data:", error);
+        } finally {
+          setIsLoading(false);
+        }
+      };
+      
+      fetchTrendData();
+    }
+  }, [activeTab, timeFilter]);
   
   // Prepare data for charts
   const statusData = [
@@ -94,9 +89,26 @@ export function OpportunityCharts({ stats, userStats }: OpportunityChartsProps) 
   
   const aiAccuracyPercentage = Math.round(stats.aiAccuracy * 100);
   
+  // Get appropriate label for time filter
+  const getTimeLabel = () => {
+    switch (timeFilter) {
+      case "today": return "Today (Hourly)";
+      case "week": return "This Week (Daily)";
+      case "month": return "This Month (Daily)";
+      case "quarter": return "This Quarter (Monthly)";
+      case "year": return "This Year (Monthly)";
+      case "all": return "All Time (Monthly)";
+      default: return "Time Period";
+    }
+  };
+  
   return (
     <div className="space-y-6">
-      <Tabs defaultValue="overview" className="w-full">
+      <Tabs 
+        defaultValue="overview" 
+        className="w-full"
+        onValueChange={(value) => setActiveTab(value)}
+      >
         <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="trends">Trends</TabsTrigger>
@@ -286,35 +298,71 @@ export function OpportunityCharts({ stats, userStats }: OpportunityChartsProps) 
         </TabsContent>
         
         <TabsContent value="trends" className="space-y-6">
+          <div className="flex justify-end mb-4">
+            <Select
+              value={timeFilter}
+              onValueChange={(value) => setTimeFilter(value as TimeFilter)}
+            >
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Select time period" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="today">Today</SelectItem>
+                <SelectItem value="week">This Week</SelectItem>
+                <SelectItem value="month">This Month</SelectItem>
+                <SelectItem value="quarter">This Quarter</SelectItem>
+                <SelectItem value="year">This Year</SelectItem>
+                <SelectItem value="all">All Time</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          
           <Card>
             <CardHeader>
               <CardTitle>Opportunity Trends</CardTitle>
               <CardDescription>
-                Monthly breakdown of opportunities by status
+                {getTimeLabel()} breakdown of opportunities by status
               </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="h-96">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart
-                    data={historicalData}
-                    margin={{
-                      top: 20,
-                      right: 30,
-                      left: 20,
-                      bottom: 5,
-                    }}
-                  >
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="month" />
-                    <YAxis allowDecimals={false} />
-                    <Tooltip />
-                    <Legend />
-                    <Bar dataKey="go" stackId="a" name="Go" fill="#10b981" />
-                    <Bar dataKey="noGo" stackId="a" name="No Go" fill="#ef4444" />
-                    <Bar dataKey="pending" stackId="a" name="Pending" fill="#f59e0b" />
-                  </BarChart>
-                </ResponsiveContainer>
+                {isLoading ? (
+                  <div className="flex flex-col space-y-3">
+                    <Skeleton className="h-[350px] w-full rounded-xl" />
+                  </div>
+                ) : trendData.length === 0 ? (
+                  <div className="flex h-full items-center justify-center">
+                    <p className="text-muted-foreground">No trend data available for this time period</p>
+                  </div>
+                ) : (
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart
+                      data={trendData}
+                      margin={{
+                        top: 20,
+                        right: 30,
+                        left: 20,
+                        bottom: 5,
+                      }}
+                    >
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis 
+                        dataKey="month" 
+                        tick={{ fontSize: 12 }}
+                        interval={timeFilter === "month" || timeFilter === "quarter" ? 2 : 0}
+                        angle={timeFilter === "month" ? -45 : 0}
+                        textAnchor={timeFilter === "month" ? "end" : "middle"}
+                        height={timeFilter === "month" ? 60 : 30}
+                      />
+                      <YAxis allowDecimals={false} />
+                      <Tooltip />
+                      <Legend />
+                      <Bar dataKey="go" stackId="a" name="Go" fill="#10b981" />
+                      <Bar dataKey="noGo" stackId="a" name="No Go" fill="#ef4444" />
+                      <Bar dataKey="pending" stackId="a" name="Pending" fill="#f59e0b" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                )}
               </div>
             </CardContent>
           </Card>
@@ -323,43 +371,60 @@ export function OpportunityCharts({ stats, userStats }: OpportunityChartsProps) 
             <CardHeader>
               <CardTitle>Success Rate Trend</CardTitle>
               <CardDescription>
-                Percentage of Go decisions over time
+                Percentage of Go decisions over {timeFilter === "today" ? "hours" : timeFilter === "week" || timeFilter === "month" ? "days" : "months"}
               </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="h-80">
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart
-                    data={historicalData.map((item) => ({
-                      ...item,
-                      successRate: item.total > 0 ? (item.go / item.total) * 100 : 0,
-                    }))}
-                    margin={{
-                      top: 20,
-                      right: 30,
-                      left: 20,
-                      bottom: 5,
-                    }}
-                  >
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="month" />
-                    <YAxis
-                      domain={[0, 100]}
-                      tickFormatter={(value) => `${value}%`}
-                    />
-                    <Tooltip formatter={(value: number) => [`${value.toFixed(1)}%`, "Success Rate"]} />
-                    <Legend />
-                    <Line
-                      type="monotone"
-                      dataKey="successRate"
-                      name="Success Rate"
-                      stroke="#10b981"
-                      strokeWidth={2}
-                      dot={{ r: 4 }}
-                      activeDot={{ r: 8 }}
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
+                {isLoading ? (
+                  <div className="flex flex-col space-y-3">
+                    <Skeleton className="h-[300px] w-full rounded-xl" />
+                  </div>
+                ) : trendData.length === 0 ? (
+                  <div className="flex h-full items-center justify-center">
+                    <p className="text-muted-foreground">No trend data available for this time period</p>
+                  </div>
+                ) : (
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart
+                      data={trendData.map((item) => ({
+                        ...item,
+                        successRate: item.total > 0 ? (item.go / item.total) * 100 : 0,
+                      }))}
+                      margin={{
+                        top: 20,
+                        right: 30,
+                        left: 20,
+                        bottom: 5,
+                      }}
+                    >
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis 
+                        dataKey="month" 
+                        tick={{ fontSize: 12 }}
+                        interval={timeFilter === "month" || timeFilter === "quarter" ? 2 : 0}
+                        angle={timeFilter === "month" ? -45 : 0}
+                        textAnchor={timeFilter === "month" ? "end" : "middle"}
+                        height={timeFilter === "month" ? 60 : 30}
+                      />
+                      <YAxis
+                        domain={[0, 100]}
+                        tickFormatter={(value) => `${value}%`}
+                      />
+                      <Tooltip formatter={(value: number) => [`${value.toFixed(1)}%`, "Success Rate"]} />
+                      <Legend />
+                      <Line
+                        type="monotone"
+                        dataKey="successRate"
+                        name="Success Rate"
+                        stroke="#10b981"
+                        strokeWidth={2}
+                        dot={{ r: 4 }}
+                        activeDot={{ r: 8 }}
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
+                )}
               </div>
             </CardContent>
           </Card>

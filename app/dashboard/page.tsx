@@ -11,7 +11,14 @@ import {
 } from "@/components/ui/card";
 import { ArrowLeft, BarChart3, CheckCircle, Clock, XCircle } from "lucide-react";
 
+// Add metadata for better SEO
+export const metadata = {
+  title: "Dashboard | BD Checker",
+  description: "Analytics and insights for opportunity management",
+};
+
 export default async function DashboardPage() {
+  // Fetch dashboard statistics
   const { success: statsSuccess, stats } = await getDashboardStats();
   const { success: userStatsSuccess, stats: userStats } = await getUserStats();
   

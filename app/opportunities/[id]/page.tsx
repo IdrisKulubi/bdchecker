@@ -40,7 +40,11 @@ export default async function OpportunityDetailPage({ params }: OpportunityDetai
             Back to Opportunities
           </Link>
         </Button>
-        <h1 className="text-3xl font-bold">{opportunity.title}</h1>
+        <h1 className="text-3xl font-bold truncate max-w-full">
+          {opportunity.title.length > 50 
+            ? `${opportunity.title.substring(0, 50)}...` 
+            : opportunity.title}
+        </h1>
         <StatusBadge status={opportunity.status} />
       </div>
       

@@ -22,7 +22,7 @@ import { ArrowLeft, BarChart3, CheckCircle, Clock, XCircle } from "lucide-react"
 import ManagerAuthWrapper from "@/components/manager-auth-wrapper";
 
 export default async function ManagerPage() {
-  const { success, opportunities, error } = await getOpportunities();
+  const {  opportunities } = await getOpportunities();
   
   // Filter opportunities that need review (status is "open")
   const pendingOpportunities = opportunities?.filter(

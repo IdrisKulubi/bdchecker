@@ -9,7 +9,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { useToast } from "@/components/ui/use-toast";
 import { Loader2, Lock } from "lucide-react";
 import {
   Dialog,
@@ -20,6 +19,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { useToast } from "@/hooks/use-toast";
 
 interface ManagerReviewFormProps {
   opportunityId: string;
@@ -67,7 +67,7 @@ export default function ManagerReviewForm({ opportunityId }: ManagerReviewFormPr
       return;
     }
     
-    const result = await verifyPasscode(passcode);
+    const result = await verifyPasscode(passcode) as unknown as boolean;
     
     if (result) {
       setIsAuthDialogOpen(false);

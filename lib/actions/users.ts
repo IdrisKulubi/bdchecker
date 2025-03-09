@@ -2,8 +2,8 @@
 
 import { revalidatePath } from "next/cache";
 import db from "@/db/drizzle";
-import { users } from "@/db/schema";
-import { eq } from "drizzle-orm";
+import { users, opportunities } from "@/db/schema";
+import { eq, desc } from "drizzle-orm";
 
 /**
  * Get all users
@@ -135,5 +135,33 @@ export async function getUserStats() {
   } catch (error) {
     console.error("Error fetching user statistics:", error);
     return { success: false, error: "Failed to fetch user statistics" };
+  }
+}
+
+/**
+ * Get all unique submitters who have submitted opportunities
+ */
+export async function getUniqueSubmitters() {
+  try {
+    // Get all users who have submitted at least one opportunity
+    const submitters = await db.query.users.findMany({
+      where: (users, { exists }) => 
+        exists(
+          db.select().from(opportunities).where(eq(opportunities.submittedById, users.id))
+        ),
+      orderBy: users.name,
+    });
+    
+    return { 
+      success: true, 
+      submitters: submitters.map(user => ({
+        id: user.id,
+        name: user.name,
+        role: user.role
+      }))
+    };
+  } catch (error) {
+    console.error("Error fetching unique submitters:", error);
+    return { success: false, error: "Failed to fetch submitters" };
   }
 } 

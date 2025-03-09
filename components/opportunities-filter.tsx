@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { getUniqueSubmitters } from "@/lib/actions/users";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -20,10 +21,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { DatePickerWithRange } from "@/components/ui/date-range-picker";
-import { CalendarIcon, ChevronDown, FilterX, Search, SlidersHorizontal } from "lucide-react";
+import { FilterX, Search, SlidersHorizontal } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { type DateRange } from "react-day-picker";
-import { addDays, format } from "date-fns";
+import { format } from "date-fns";
 
 interface FiltersState {
   search: string;
@@ -43,9 +44,36 @@ const initialFilters: FiltersState = {
   submitter: "all",
 };
 
+interface Submitter {
+  id: string;
+  name: string;
+  role: string;
+}
+
 export function OpportunitiesFilter() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const [submitters, setSubmitters] = useState<Submitter[]>([]);
+  const [isLoadingSubmitters, setIsLoadingSubmitters] = useState(true);
+  
+  // Fetch submitters on component mount
+  useEffect(() => {
+    const fetchSubmitters = async () => {
+      try {
+        setIsLoadingSubmitters(true);
+        const result = await getUniqueSubmitters();
+        if (result.success && result.submitters) {
+          setSubmitters(result.submitters);
+        }
+      } catch (error) {
+        console.error("Failed to fetch submitters:", error);
+      } finally {
+        setIsLoadingSubmitters(false);
+      }
+    };
+    
+    fetchSubmitters();
+  }, []);
   
   // Initialize filters from URL params
   const [filters, setFilters] = useState<FiltersState>(() => {
@@ -230,9 +258,17 @@ export function OpportunitiesFilter() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Submitters</SelectItem>
-                <SelectItem value="john">John Doe</SelectItem>
-                <SelectItem value="jane">Jane Smith</SelectItem>
-                <SelectItem value="bob">Bob Johnson</SelectItem>
+                {isLoadingSubmitters ? (
+                  <SelectItem value="loading" disabled>Loading submitters...</SelectItem>
+                ) : submitters.length > 0 ? (
+                  submitters.map((submitter) => (
+                    <SelectItem key={submitter.id} value={submitter.id}>
+                      {submitter.name}
+                    </SelectItem>
+                  ))
+                ) : (
+                  <SelectItem value="none" disabled>No submitters found</SelectItem>
+                )}
               </SelectContent>
             </Select>
             
@@ -282,12 +318,12 @@ export function OpportunitiesFilter() {
                 </Badge>
               ))}
               
-              {filters.submitter && (
+              {filters.submitter && filters.submitter !== "all" && (
                 <Badge variant="secondary" className="px-2 py-1">
-                  Submitter: {filters.submitter}
+                  Submitter: {submitters.find(s => s.id === filters.submitter)?.name || filters.submitter}
                   <button
                     className="ml-1 hover:text-destructive"
-                    onClick={() => setFilters((prev) => ({ ...prev, submitter: "" }))}
+                    onClick={() => setFilters((prev) => ({ ...prev, submitter: "all" }))}
                   >
                     ×
                   </button>
@@ -321,7 +357,7 @@ export function OpportunitiesFilter() {
       </div>
       
       <div className="flex justify-end gap-2">
-        <Button variant="secondary" onClick={resetFilters}>
+        <Button variant="secondary" className="cursor-pointer" onClick={resetFilters}>
           Reset
         </Button>
         <Button onClick={applyFilters}>

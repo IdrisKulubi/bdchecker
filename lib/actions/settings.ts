@@ -58,7 +58,7 @@ export async function initializeSystemSettings() {
       // Create default manager passcode
       await db.insert(systemSettings).values({
         key: "manager_passcode",
-        value: "manager123", // This should be changed in production
+        value: process.env.MANAGER_PASSCODE || "3360", // Use environment variable with fallback
         description: "Passcode for manager access",
       });
     }
@@ -172,6 +172,12 @@ export async function updateSystemSetting(data: SystemSettingUpdate) {
  */
 export async function verifyManagerPasscode(passcode: string) {
   try {
+    // First check against environment variable for better performance
+    if (process.env.MANAGER_PASSCODE && passcode === process.env.MANAGER_PASSCODE) {
+      return { success: true };
+    }
+    
+    // Fallback to database check
     const setting = await db.query.systemSettings.findFirst({
       where: eq(systemSettings.key, "manager_passcode"),
     });

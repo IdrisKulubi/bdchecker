@@ -74,7 +74,7 @@ export default function ManagerAuthButton() {
         <Button
           variant="outline"
           size="sm"
-          className="gap-2"
+          className="gap-2 cursor-pointer"
           onClick={() => router.push("/manager")}
         >
           <ShieldCheck className="h-4 w-4" />
@@ -84,6 +84,7 @@ export default function ManagerAuthButton() {
         <Button
           variant="ghost"
           size="sm"
+          className="cursor-pointer"
           onClick={handleLogout}
         >
           <LogOut className="h-4 w-4" />

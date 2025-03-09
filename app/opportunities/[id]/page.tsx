@@ -21,7 +21,11 @@ interface OpportunityDetailPageProps {
 }
 
 export default async function OpportunityDetailPage({ params }: OpportunityDetailPageProps) {
-  const { success, opportunity } = await getOpportunity(params.id);
+  // Ensure params is properly awaited before accessing properties
+  const resolvedParams = await Promise.resolve(params);
+  const opportunityId = resolvedParams.id;
+  
+  const { success, opportunity } = await getOpportunity(opportunityId);
   
   if (!success || !opportunity) {
     notFound();

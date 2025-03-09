@@ -136,7 +136,7 @@ export function OpportunityCharts({ stats, userStats }: OpportunityChartsProps) 
                           "",
                         ]}
                       />
-                      <Legend formatter={(value, entry) => <span className="text-sm">{value}</span>} />
+                      <Legend formatter={(value) => <span className="text-sm">{value}</span>} />
                     </PieChart>
                   </ResponsiveContainer>
                 </div>

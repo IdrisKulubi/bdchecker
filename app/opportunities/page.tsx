@@ -1,5 +1,5 @@
-import { getOpportunities } from "@/app/actions/opportunities";
-import { OpportunitiesTable } from "@/components/opportunities-table";
+import { getOpportunities } from "@/lib/actions/opportunities";
+import { OpportunitiesTable, type Opportunity } from "@/components/opportunities-table";
 import { OpportunitiesFilter } from "@/components/opportunities-filter";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -7,21 +7,35 @@ import Link from "next/link";
 import { Plus, ArrowLeft, DownloadCloud } from "lucide-react";
 
 interface OpportunitiesPageProps {
-  searchParams?: {
+  searchParams: {
     [key: string]: string | string[] | undefined;
   };
 }
 
 export default async function OpportunitiesPage({ searchParams }: OpportunitiesPageProps) {
+  // Ensure searchParams is properly awaited
+  const params = await Promise.resolve(searchParams);
+  
   const { success, opportunities, error } = await getOpportunities();
   
   // Convert date strings to Date objects for the opportunities
   const processedOpportunities = success && opportunities
-    ? opportunities.map(opportunity => ({
-        ...opportunity,
-        createdAt: new Date(opportunity.createdAt),
-        updatedAt: new Date(opportunity.updatedAt),
-      }))
+    ? opportunities.map(opportunity => {
+        // Only accept valid decision values
+        const aiDecision = (opportunity.aiDecision === "go" || opportunity.aiDecision === "no_go") 
+          ? opportunity.aiDecision as "go" | "no_go"
+          : null;
+        
+        return {
+          ...opportunity,
+          createdAt: new Date(opportunity.createdAt),
+          updatedAt: new Date(opportunity.updatedAt),
+          aiDecision,
+          managerDecision: (opportunity.managerDecision === "go" || opportunity.managerDecision === "no_go")
+            ? opportunity.managerDecision as "go" | "no_go"
+            : null
+        };
+      }) as unknown as Opportunity[]
     : [];
 
   return (
@@ -68,7 +82,7 @@ export default async function OpportunitiesPage({ searchParams }: OpportunitiesP
         ) : (
           <OpportunitiesTable 
             opportunities={processedOpportunities} 
-            searchParams={searchParams}
+            searchParams={params}
           />
         )}
       </div>

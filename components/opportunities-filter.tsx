@@ -40,7 +40,7 @@ const initialFilters: FiltersState = {
   aiDecision: [],
   managerDecision: [],
   dateRange: undefined,
-  submitter: "",
+  submitter: "all",
 };
 
 export function OpportunitiesFilter() {
@@ -53,7 +53,7 @@ export function OpportunitiesFilter() {
     const status = searchParams.get("status")?.split(",").filter(Boolean) || [];
     const aiDecision = searchParams.get("aiDecision")?.split(",").filter(Boolean) || [];
     const managerDecision = searchParams.get("managerDecision")?.split(",").filter(Boolean) || [];
-    const submitter = searchParams.get("submitter") || "";
+    const submitter = searchParams.get("submitter") || "all";
     
     // Parse date range if present
     let dateRange: DateRange | undefined = undefined;
@@ -83,7 +83,7 @@ export function OpportunitiesFilter() {
     filters.aiDecision.length > 0,
     filters.managerDecision.length > 0,
     !!filters.dateRange,
-    !!filters.submitter,
+    !!(filters.submitter && filters.submitter !== "all"),
   ].filter(Boolean).length;
   
   // Apply filters
@@ -94,7 +94,7 @@ export function OpportunitiesFilter() {
     if (filters.status.length > 0) params.set("status", filters.status.join(","));
     if (filters.aiDecision.length > 0) params.set("aiDecision", filters.aiDecision.join(","));
     if (filters.managerDecision.length > 0) params.set("managerDecision", filters.managerDecision.join(","));
-    if (filters.submitter) params.set("submitter", filters.submitter);
+    if (filters.submitter && filters.submitter !== "all") params.set("submitter", filters.submitter);
     
     if (filters.dateRange?.from) {
       params.set("from", format(filters.dateRange.from, "yyyy-MM-dd"));
@@ -229,7 +229,7 @@ export function OpportunitiesFilter() {
                 <SelectValue placeholder="Submitter" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All Submitters</SelectItem>
+                <SelectItem value="all">All Submitters</SelectItem>
                 <SelectItem value="john">John Doe</SelectItem>
                 <SelectItem value="jane">Jane Smith</SelectItem>
                 <SelectItem value="bob">Bob Johnson</SelectItem>

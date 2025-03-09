@@ -58,10 +58,10 @@ type User = {
   email?: string;
 };
 
-type OpportunityStatus = "open" | "in_review" | "go" | "no_go";
-type Decision = "go" | "no_go" | null;
+export type OpportunityStatus = "open" | "in_review" | "go" | "no_go";
+export type Decision = "go" | "no_go" | null;
 
-interface Opportunity {
+export interface Opportunity {
   id: string;
   title: string;
   description: string;

@@ -6,7 +6,7 @@ import {
   getOpportunities, 
   getOpportunity, 
   reviewOpportunity 
-} from "@/app/actions/opportunities";
+} from "@/lib/actions/opportunities";
 
 interface UseOpportunitiesProps {
   onSuccess?: (message: string) => void;

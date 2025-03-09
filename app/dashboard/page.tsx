@@ -1,5 +1,5 @@
-import { getDashboardStats } from "@/app/actions/opportunities";
-import { getUserStats } from "@/app/actions/users";
+import { getDashboardStats } from "@/lib/actions/opportunities";
+import { getUserStats } from "@/lib/actions/users";
 import { OpportunityCharts } from "@/components/dashboard/opportunity-charts";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";

@@ -1,4 +1,4 @@
-import { getOpportunity } from "@/app/actions/opportunities";
+import { getOpportunity } from "@/lib/actions/opportunities";
 import { formatDate, formatDateTime, getScoreColor } from "@/lib/utils";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -7,12 +7,10 @@ import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
 import { ArrowLeft } from "lucide-react";
 import ManagerReviewForm from "@/components/manager-review-form";
 
@@ -23,7 +21,7 @@ interface OpportunityDetailPageProps {
 }
 
 export default async function OpportunityDetailPage({ params }: OpportunityDetailPageProps) {
-  const { success, opportunity, error } = await getOpportunity(params.id);
+  const { success, opportunity } = await getOpportunity(params.id);
   
   if (!success || !opportunity) {
     notFound();

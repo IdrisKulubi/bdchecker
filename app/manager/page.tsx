@@ -1,4 +1,4 @@
-import { getOpportunities } from "@/app/actions/opportunities";
+import { getOpportunities } from "@/lib/actions/opportunities";
 import { formatDate, truncateText } from "@/lib/utils";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";

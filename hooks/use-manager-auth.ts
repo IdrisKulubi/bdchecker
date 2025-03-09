@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { verifyManagerPasscode } from "@/app/actions/settings";
+import { verifyManagerPasscode } from "@/lib/actions/settings";
 
 interface UseManagerAuthProps {
   onSuccess?: () => void;

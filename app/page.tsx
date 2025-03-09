@@ -1,5 +1,5 @@
 import { ModeToggle } from "@/components/theme/theme-toggle";
-import { initializeSystemSettings } from "./actions/settings";
+import { initializeSystemSettings } from "../lib/actions/settings";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import ManagerAuthButton from "@/components/manager-auth-button";

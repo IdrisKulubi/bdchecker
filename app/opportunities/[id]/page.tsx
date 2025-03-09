@@ -14,15 +14,16 @@ import { Badge } from "@/components/ui/badge";
 import { ArrowLeft } from "lucide-react";
 import ManagerReviewForm from "@/components/manager-review-form";
 
+// Updated interface to match Next.js 15 expectations
 interface OpportunityDetailPageProps {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
 export default async function OpportunityDetailPage({ params }: OpportunityDetailPageProps) {
   // Ensure params is properly awaited before accessing properties
-  const resolvedParams = await Promise.resolve(params);
+  const resolvedParams = await params;
   const opportunityId = resolvedParams.id;
   
   const { success, opportunity } = await getOpportunity(opportunityId);

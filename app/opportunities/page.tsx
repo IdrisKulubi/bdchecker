@@ -6,15 +6,16 @@ import { Separator } from "@/components/ui/separator";
 import Link from "next/link";
 import { Plus, ArrowLeft, DownloadCloud } from "lucide-react";
 
+// Updated interface to match Next.js 15 expectations
 interface OpportunitiesPageProps {
-  searchParams: {
+  searchParams: Promise<{
     [key: string]: string | string[] | undefined;
-  };
+  }>;
 }
 
 export default async function OpportunitiesPage({ searchParams }: OpportunitiesPageProps) {
   // Ensure searchParams is properly awaited
-  const params = await Promise.resolve(searchParams);
+  const params = await searchParams;
   
   const { success, opportunities, error } = await getOpportunities();
   

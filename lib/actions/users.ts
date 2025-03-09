@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import db from "@/db/drizzle";
 import { users, opportunities } from "@/db/schema";
-import { eq, desc } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 
 /**
  * Get all users

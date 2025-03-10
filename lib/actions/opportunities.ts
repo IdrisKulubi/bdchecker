@@ -43,14 +43,7 @@ export async function submitOpportunity(data: OpportunitySubmission) {
       submitter = newUser;
     }
 
-    // Analyze the opportunity with AI
-    const aiAnalysis = await analyzeOpportunity(
-      data.title,
-      data.description,
-      data.timeline
-    );
-
-    // Insert the opportunity
+    // Create the opportunity first with a pending status
     const [opportunity] = await db
       .insert(opportunities)
       .values({
@@ -58,16 +51,62 @@ export async function submitOpportunity(data: OpportunitySubmission) {
         description: data.description,
         timeline: data.timeline,
         submittedById: submitter.id,
-        aiDecision: aiAnalysis.decision,
         status: "open",
+        // Initially set to null, will be updated after analysis
+        aiDecision: null,
       })
       .returning();
+
+    // Start the AI analysis in the background without awaiting it
+    // This prevents the Vercel function from timing out
+    analyzeOpportunityAndUpdateDB(
+      opportunity.id,
+      data.title,
+      data.description,
+      data.timeline
+    ).catch(error => {
+      console.error("Background AI analysis failed:", error);
+    });
+
+    revalidatePath("/opportunities");
+    return { success: true, opportunity };
+  } catch (error) {
+    console.error("Error submitting opportunity:", error);
+    return { success: false, error: "Failed to submit opportunity" };
+  }
+}
+
+/**
+ * Background process to analyze an opportunity and update the database
+ * This function runs asynchronously and doesn't block the response
+ */
+async function analyzeOpportunityAndUpdateDB(
+  opportunityId: string,
+  title: string,
+  description: string,
+  timeline: string
+) {
+  try {
+    // Analyze the opportunity with AI
+    const aiAnalysis = await analyzeOpportunity(
+      title,
+      description,
+      timeline
+    );
+
+    // Update the opportunity with the AI decision
+    await db
+      .update(opportunities)
+      .set({
+        aiDecision: aiAnalysis.decision,
+      })
+      .where(eq(opportunities.id, opportunityId));
 
     // Insert the scores
     await Promise.all(
       aiAnalysis.scores.map((score: AIScoringResult) =>
         db.insert(opportunityScores).values({
-          opportunityId: opportunity.id,
+          opportunityId: opportunityId,
           criterion: score.criterion,
           score: score.score,
           explanation: score.explanation,
@@ -75,11 +114,12 @@ export async function submitOpportunity(data: OpportunitySubmission) {
       )
     );
 
+    // Revalidate the opportunities page to show the updated data
     revalidatePath("/opportunities");
-    return { success: true, opportunity, aiAnalysis };
+    return { success: true };
   } catch (error) {
-    console.error("Error submitting opportunity:", error);
-    return { success: false, error: "Failed to submit opportunity" };
+    console.error("Error in background AI analysis:", error);
+    return { success: false, error: "Failed to analyze opportunity" };
   }
 }
 

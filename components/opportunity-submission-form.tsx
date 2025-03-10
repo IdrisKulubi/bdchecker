@@ -33,8 +33,8 @@ export default function OpportunitySubmissionForm() {
       setDescription("");
       setTimeline("");
       
-      // Redirect to opportunities page
-      router.push("/opportunities");
+      // Redirect to opportunities page with pending flag
+      router.push("/opportunities?pendingSubmission=true");
     },
     onError: (error) => {
       toast({
@@ -57,7 +57,8 @@ export default function OpportunitySubmissionForm() {
       return;
     }
     
-    await submitNewOpportunity(title, description, timeline, submitterName);
+    // Start the submission process
+    submitNewOpportunity(title, description, timeline, submitterName);
   };
   
   return (
@@ -122,12 +123,16 @@ export default function OpportunitySubmissionForm() {
             {isLoading ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Analyzing...
+                Submitting...
               </>
             ) : (
               "Submit Opportunity"
             )}
           </Button>
+          
+          <p className="text-xs text-muted-foreground text-center">
+            Analysis typically takes 10-15 seconds. You&apos;ll be redirected to the opportunities page while processing.
+          </p>
         </form>
       </CardContent>
     </Card>

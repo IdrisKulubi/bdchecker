@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { useToast } from "@/hooks/use-toast";
-import { CheckCircle } from "lucide-react";
 
 export function OpportunitiesNotification() {
   const searchParams = useSearchParams();
@@ -20,7 +19,6 @@ export function OpportunitiesNotification() {
         title: "Analysis Complete",
         description: "Your opportunity has been analyzed successfully.",
         variant: "default",
-        icon: <CheckCircle className="h-5 w-5 text-green-500" />,
         duration: 5000,
       });
       
